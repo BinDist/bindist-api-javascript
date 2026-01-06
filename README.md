@@ -31,7 +31,7 @@ npm run build
 import { createBinDistClient } from '@bindist/client';
 
 const client = createBinDistClient({
-  baseUrl: 'https://your-api.execute-api.eu-west-1.amazonaws.com/dev',
+  baseUrl: 'https://api.bindist.com',
   apiKey: 'your-api-key',
 });
 
@@ -52,7 +52,7 @@ if (apps.success && apps.data) {
 const { createBinDistClient } = require('@bindist/client');
 
 const client = createBinDistClient({
-  baseUrl: 'https://your-api.execute-api.eu-west-1.amazonaws.com/dev',
+  baseUrl: 'https://api.bindist.com',
   apiKey: 'your-api-key',
 });
 
@@ -71,7 +71,7 @@ if (apps.success) {
 import { createBinDistClient, ListApplicationsOptions } from '@bindist/client';
 
 const client = createBinDistClient({
-  baseUrl: 'https://your-api.execute-api.eu-west-1.amazonaws.com/dev',
+  baseUrl: 'https://api.bindist.com',
   apiKey: 'your-api-key',
 });
 
@@ -328,7 +328,7 @@ This client uses the native `fetch` API and should work in modern browsers. For 
 <script src="https://unpkg.com/@bindist/client/dist/index.js"></script>
 <script>
   const client = BinDist.createBinDistClient({
-    baseUrl: 'https://your-api.execute-api.eu-west-1.amazonaws.com/dev',
+    baseUrl: 'https://api.bindist.com',
     apiKey: 'your-api-key',
   });
 
