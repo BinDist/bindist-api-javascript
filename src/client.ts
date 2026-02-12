@@ -24,6 +24,7 @@ import {
   CreateApplicationResponse,
   UpdateApplicationCustomersOptions,
   UpdateApplicationCustomersResponse,
+  GetDownloadInfoOptions,
 } from './types';
 
 export interface BinDistClientConfig {
@@ -252,11 +253,16 @@ export class BinDistClient {
 
   /**
    * Get download URL and information for a file
+   * @param applicationId The application ID
+   * @param version The version string
+   * @param fileId Optional file ID (defaults to main file)
+   * @param options Optional settings including channel for accessing disabled versions
    */
   async getDownloadInfo(
     applicationId: string,
     version: string,
-    fileId?: string
+    fileId?: string,
+    options: GetDownloadInfoOptions = {}
   ): Promise<ApiResponse<DownloadInfo>> {
     const params: Record<string, string> = {
       applicationId,
@@ -267,8 +273,13 @@ export class BinDistClient {
       params.fileId = fileId;
     }
 
+    const headers: Record<string, string> = {};
+    if (options.channel) {
+      headers['X-Channel'] = options.channel;
+    }
+
     const queryString = this.buildQueryString(params);
-    return this.request<DownloadInfo>(`/v1/downloads/url${queryString}`);
+    return this.request<DownloadInfo>(`/v1/downloads/url${queryString}`, { headers });
   }
 
   /**

@@ -17,6 +17,7 @@ export type {
   CreateShareLinkOptions,
   CustomerInfo,
   DownloadInfo,
+  GetDownloadInfoOptions,
   ListActivityOptions,
   ListActivityResponse,
   ListApplicationsOptions,

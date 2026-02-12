@@ -82,6 +82,14 @@ export interface ListVersionsOptions {
 }
 
 /**
+ * Options for getting download info
+ */
+export interface GetDownloadInfoOptions {
+  /** Channel for accessing disabled versions. Use "Test" to download disabled versions. */
+  channel?: string;
+}
+
+/**
  * Options for updating a version
  */
 export interface UpdateVersionOptions {
