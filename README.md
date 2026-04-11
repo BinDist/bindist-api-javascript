@@ -110,6 +110,9 @@ if (versions.success && versions.data) {
     console.log(`${ver.version} - ${ver.fileSize} bytes`);
   }
 }
+
+// Include disabled versions by selecting the Test channel
+const testVersions = await client.listVersions('myapp', { channel: 'Test' });
 ```
 
 ### List Version Files
@@ -130,6 +133,8 @@ import { writeFileSync } from 'fs';
 
 // Get download URL
 const downloadInfo = await client.getDownloadInfo('myapp', '1.0.0');
+// To download a disabled version, pass a channel:
+// const downloadInfo = await client.getDownloadInfo('myapp', '1.0.0', undefined, { channel: 'Test' });
 if (downloadInfo.success && downloadInfo.data) {
   console.log('File:', downloadInfo.data.fileName);
   console.log('Size:', downloadInfo.data.fileSize, 'bytes');
@@ -175,6 +180,102 @@ if (files.success && files.data) {
 }
 ```
 
+### Update Client Credentials
+
+```typescript
+client.setApiKey('new-api-key');
+client.setBaseUrl('https://api.example.com');
+```
+
+### Application Stats
+
+```typescript
+const stats = await client.getApplicationStats('myapp');
+// Optionally scope to a single version:
+const versionStats = await client.getApplicationStats('myapp', '1.0.0');
+```
+
+### Create Share Link
+
+```typescript
+const link = await client.createShareLink({
+  applicationId: 'myapp',
+  version: '1.0.0',
+  fileId: 'optional-file-id',
+  expiresInMinutes: 30,
+});
+if (link.success && link.data) {
+  console.log('Share URL:', link.data.shareUrl);
+}
+```
+
+## Admin Methods
+
+These methods require an API key with admin/management privileges.
+
+### Manage Applications
+
+```typescript
+// Create
+await client.createApplication({
+  applicationId: 'myapp',
+  name: 'My App',
+  description: 'Desktop client',
+  tags: ['windows'],
+  customerIds: ['customer-1'],
+});
+
+// Update customer access
+await client.updateApplicationCustomers('myapp', {
+  addCustomerIds: ['customer-2'],
+  removeCustomerIds: ['customer-1'],
+});
+
+// Soft delete
+await client.deleteApplication('myapp');
+```
+
+### Update a Version
+
+```typescript
+await client.updateVersion('myapp', '1.0.0', {
+  releaseNotes: 'Bug fixes',
+  isActive: true,
+  isEnabled: true,
+  minimumClientVersion: '0.9.0',
+  totpCode: '123456',
+});
+```
+
+### Manage Customers
+
+```typescript
+const customers = await client.listCustomers();
+
+await client.updateCustomer('customer-1', {
+  isActive: false,
+  name: 'Renamed Customer',
+  notes: 'Deactivated on request',
+});
+
+const regen = await client.regenerateCustomerKey('customer-1');
+if (regen.success && regen.data) {
+  console.log('New API key:', regen.data.apiKey);
+}
+```
+
+### List Activity
+
+```typescript
+const activity = await client.listActivity({
+  type: 'all',
+  limit: 100,
+  customerId: 'customer-1',
+  startDate: '2026-01-01',
+  endDate: '2026-04-01',
+});
+```
+
 ## Type Reference
 
 ### ApplicationInfo
@@ -200,11 +301,12 @@ interface VersionInfo {
   version: string;
   releaseNotes?: string;
   isActive: boolean;
+  /** Whether the version is enabled for production downloads */
+  isEnabled: boolean;
   createdAt: string;
   updatedAt: string;
   fileSize: number;
   downloadCount: number;
-  requiredTier: string;
   minimumClientVersion?: string;
 }
 ```
