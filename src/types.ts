@@ -97,6 +97,7 @@ export interface UpdateVersionOptions {
   isActive?: boolean;
   isEnabled?: boolean;
   minimumClientVersion?: string;
+  totpCode?: string;
 }
 
 /**
