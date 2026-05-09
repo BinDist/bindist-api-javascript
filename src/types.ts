@@ -279,6 +279,9 @@ export interface ActivityItem {
   uploadMethod?: 'direct' | 'large';
   ipChanged?: boolean;
   previousIp?: string;
+  // Download-specific fields
+  downloadSource?: 'api' | 'share';
+  shareToken?: string;
 }
 
 /**
