@@ -130,6 +130,7 @@ export interface DownloadInfo {
  */
 export interface ListApplicationsOptions {
   page?: number;
+  /** Items per page. Sent as the `limit` query parameter; the server caps it at 100. */
   pageSize?: number;
   search?: string;
   tags?: string;

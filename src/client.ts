@@ -130,7 +130,12 @@ export class BinDistClient {
   async listApplications(
     options: ListApplicationsOptions = {}
   ): Promise<ApiResponse<ListApplicationsResponse>> {
-    const queryString = this.buildQueryString(options as Record<string, unknown>);
+    // The API reads the page-size parameter as `limit`; `pageSize` is ignored.
+    const { pageSize, ...rest } = options;
+    const queryString = this.buildQueryString({
+      ...rest,
+      ...(pageSize === undefined ? {} : { limit: pageSize }),
+    } as Record<string, unknown>);
     return this.request<ListApplicationsResponse>(
       `/v1/applications${queryString}`
     );
