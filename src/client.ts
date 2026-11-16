@@ -81,10 +81,14 @@ export class BinDistClient {
         signal: controller.signal,
       });
 
+      const text = await response.text();
       clearTimeout(timeoutId);
 
-      const data = await response.json();
-      return data as ApiResponse<T>;
+      if (!response.ok) {
+        return errorResponse<T>(response.status, response.statusText, text);
+      }
+
+      return JSON.parse(text) as ApiResponse<T>;
     } catch (error) {
       clearTimeout(timeoutId);
 
@@ -388,6 +392,71 @@ export class BinDistClient {
     const queryString = this.buildQueryString(options as Record<string, unknown>);
     return this.request<ListActivityResponse>(`/v1/activity${queryString}`);
   }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Build the response for a non-2xx status. Uses the API's error envelope when
+ * the body has one; otherwise (auth middleware, rate limiter, gateway HTML
+ * page, empty body) synthesizes an error from the HTTP status. Either way the
+ * status is kept in `error.httpStatus`.
+ */
+function errorResponse<T>(
+  status: number,
+  statusText: string,
+  text: string
+): ApiResponse<T> {
+  let body: unknown;
+  try {
+    body = JSON.parse(text);
+  } catch {
+    body = undefined;
+  }
+
+  if (isRecord(body) && isRecord(body.error) && typeof body.error.code === 'string') {
+    const envelope = body as unknown as ApiResponse<T>;
+    return {
+      success: false,
+      error: { ...envelope.error!, httpStatus: status },
+      meta: envelope.meta,
+    };
+  }
+
+  let message = '';
+  if (isRecord(body)) {
+    // Bare {"message": "..."} or {"error": "..."} bodies
+    if (typeof body.message === 'string') {
+      message = body.message;
+    } else if (typeof body.error === 'string') {
+      message = body.error;
+    }
+  }
+
+  return {
+    success: false,
+    error: {
+      code: codeForStatus(status),
+      message: message || statusText || `HTTP ${status}`,
+      httpStatus: status,
+    },
+  };
+}
+
+/**
+ * Stable lower-case error code for an HTTP status, matching the other BinDist clients.
+ */
+function codeForStatus(status: number): string {
+  if (status === 400) return 'bad_request';
+  if (status === 401) return 'unauthorized';
+  if (status === 403) return 'forbidden';
+  if (status === 404) return 'not_found';
+  if (status === 409) return 'conflict';
+  if (status === 429) return 'rate_limited';
+  if (status >= 500) return 'server_error';
+  return 'http_error';
 }
 
 /**
