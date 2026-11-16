@@ -1,15 +1,20 @@
 {
   "name": "@bindist/client",
   "version": "1.0.0",
-  "description": "Client library for the Application Distribution System API",
+  "description": "TypeScript/JavaScript client for the BinDist API",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
     }
   },
   "files": [
@@ -21,7 +26,8 @@
     "build:browser": "tsup src/browser.ts --format iife --minify --outDir dist/browser",
     "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
     "lint": "eslint src/",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run lint && npm run typecheck && npm run build"
   },
   "keywords": [
     "bindist",
@@ -29,7 +35,15 @@
     "distribution",
     "application"
   ],
-  "author": "",
+  "author": "BinDist <dev@bindist.eu>",
+  "homepage": "https://docs.bindist.eu/sdks/javascript/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BinDist/bindist-api-javascript.git"
+  },
+  "bugs": {
+    "url": "https://github.com/BinDist/bindist-api-javascript/issues"
+  },
   "license": "MIT",
   "devDependencies": {
     "@eslint/js": "^9.0.0",
@@ -41,5 +55,8 @@
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

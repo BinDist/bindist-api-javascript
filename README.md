@@ -9,7 +9,7 @@ JavaScript/TypeScript client library for the Application Distribution System API
 
 ## Installation
 
-### From npm (when published)
+### From npm
 
 ```bash
 npm install @bindist/client
@@ -18,7 +18,8 @@ npm install @bindist/client
 ### From source
 
 ```bash
-cd api/javascript
+git clone https://github.com/BinDist/bindist-api-javascript.git
+cd bindist-api-javascript
 npm install
 npm run build
 ```
