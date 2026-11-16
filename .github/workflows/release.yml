@@ -1,5 +1,10 @@
 name: Release
 
+# Publishes to npm via trusted publishing (OIDC): no NPM_TOKEN secret.
+# Configure the trusted publisher on npmjs.com under
+# @bindist/client -> Settings -> Trusted Publisher:
+#   GitHub Actions, BinDist/bindist-api-javascript, workflow release.yml
+
 on:
   push:
     tags:
@@ -7,7 +12,7 @@ on:
 
 permissions:
   contents: read
-  id-token: write # npm provenance
+  id-token: write # OIDC token for npm trusted publishing
 
 jobs:
   publish:
@@ -19,9 +24,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'npm'
-          registry-url: 'https://registry.npmjs.org'
+
+      # Trusted publishing needs npm >= 11.5.1
+      - name: Update npm
+        run: npm install -g npm@latest
 
       - name: Check tag matches package.json version
         run: |
@@ -31,11 +39,20 @@ jobs:
             exit 1
           fi
 
+      - name: Skip if this version is already on npm
+        id: published
+        run: |
+          NAME_VERSION="$(node -p 'const p = require("./package.json"); `${p.name}@${p.version}`')"
+          if npm view "$NAME_VERSION" version >/dev/null 2>&1; then
+            echo "$NAME_VERSION is already published, nothing to do"
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Install dependencies
+        if: steps.published.outputs.exists != 'true'
         run: npm ci
 
-      # prepublishOnly runs lint, typecheck and build
+      # prepublishOnly runs lint, typecheck and build; provenance is automatic
       - name: Publish
-        run: npm publish --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        if: steps.published.outputs.exists != 'true'
+        run: npm publish
