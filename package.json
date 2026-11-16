@@ -36,7 +36,7 @@
     "application"
   ],
   "author": "BinDist <dev@bindist.eu>",
-  "homepage": "https://docs.bindist.eu/sdks/javascript/",
+  "homepage": "https://docs.bindist.eu/sdks/javascript.html",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/BinDist/bindist-api-javascript.git"
