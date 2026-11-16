@@ -3,13 +3,21 @@
  */
 
 /**
- * Represents an error returned by the API
+ * Represents an error returned by the API.
+ *
+ * Errors from the API's own error envelope carry upper-case codes such as
+ * `NOT_FOUND`. Errors from layers in front of the API (auth middleware, rate
+ * limiters, gateways) don't use the envelope; for those the client derives a
+ * lower-case code from the HTTP status (`unauthorized`, `rate_limited`,
+ * `server_error`, ...). Compare codes case-insensitively, or use `httpStatus`.
  */
 export interface ApiError {
   code: string;
   message: string;
   details?: Record<string, unknown>;
   timestamp?: string;
+  /** HTTP status of the response; set for every non-2xx response. */
+  httpStatus?: number;
 }
 
 /**
@@ -94,9 +102,12 @@ export interface GetDownloadInfoOptions {
  */
 export interface UpdateVersionOptions {
   releaseNotes?: string | null;
+  /** @deprecated Ignored by the API; only `releaseNotes`, `isEnabled` and `totpCode` are applied. */
   isActive?: boolean;
   isEnabled?: boolean;
+  /** @deprecated Ignored by the API; only `releaseNotes`, `isEnabled` and `totpCode` are applied. */
   minimumClientVersion?: string;
+  /** 6-digit TOTP code; required when setting `isEnabled: true` on a tenant with TOTP enabled. */
   totpCode?: string;
 }
 

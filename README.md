@@ -241,12 +241,13 @@ await client.deleteApplication('myapp');
 ```typescript
 await client.updateVersion('myapp', '1.0.0', {
   releaseNotes: 'Bug fixes',
-  isActive: true,
   isEnabled: true,
-  minimumClientVersion: '0.9.0',
-  totpCode: '123456',
+  totpCode: '123456', // required to enable a version when the tenant has TOTP on
 });
 ```
+
+The API only applies `releaseNotes`, `isEnabled` and `totpCode`. The `isActive` and
+`minimumClientVersion` options are deprecated and ignored.
 
 ### Manage Customers
 
@@ -358,6 +359,7 @@ interface ApiError {
   message: string;
   details?: Record<string, unknown>;
   timestamp?: string;
+  httpStatus?: number; // set for every non-2xx response
 }
 ```
 
@@ -400,6 +402,24 @@ if (response.success && response.data) {
   // Handle error
   console.error('Error Code:', response.error?.code);
   console.error('Error Message:', response.error?.message);
+}
+```
+
+Error codes come from two places:
+
+- **The API's error envelope:** upper case, e.g. `BAD_REQUEST`, `UNAUTHORIZED`, `NOT_FOUND`.
+- **The client**, for responses that aren't the envelope (auth middleware, rate limiter,
+  gateway error pages): lower case and derived from the HTTP status: `bad_request`,
+  `unauthorized`, `forbidden`, `not_found`, `conflict`, `rate_limited`, `server_error`,
+  `http_error`. The client also uses `TIMEOUT` when a request exceeds `timeout`, and
+  `NETWORK_ERROR` when the request fails or a successful response isn't JSON.
+
+So compare codes case-insensitively, or check `response.error?.httpStatus`, which is set for
+every non-2xx response:
+
+```typescript
+if (response.error?.httpStatus === 429) {
+  // back off and retry
 }
 ```
 
